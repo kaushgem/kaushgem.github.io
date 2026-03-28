@@ -1,0 +1,40 @@
+@page {
+  margin: 1.5cm;
+}
+
+body {
+  background: #fff !important;
+  color: #000 !important;
+  font-size: 11pt;
+}
+
+.site-header,
+.skip-link,
+.cta-row {
+  display: none !important;
+}
+
+.site-footer {
+  border: none !important;
+  padding-top: 1rem !important;
+}
+
+.section {
+  padding: 1rem 0 !important;
+  page-break-inside: avoid;
+}
+
+.section--muted {
+  background: transparent !important;
+  border: none !important;
+}
+
+a[href]::after {
+  content: " (" attr(href) ")";
+  font-size: 0.85em;
+  word-break: break-all;
+}
+
+a[href^="#"]::after {
+  content: "";
+}
