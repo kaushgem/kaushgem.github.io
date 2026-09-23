@@ -72,7 +72,7 @@
   var form = el("form", "shell__form");
   var line = el("label", "shell__line");
   line.appendChild(promptEl());
-  var srLabel = el("span", "sr-only", "Type a command, for example help");
+  var srLabel = el("span", "sr-only", "Type a command, for example help. Tab completes; Escape leaves the prompt.");
   line.appendChild(srLabel);
   var field = el("span", "shell__field");
   var ghost = el("span", "shell__ghost");
@@ -107,6 +107,8 @@
   hint.appendChild(document.createTextNode(" completes · "));
   hint.appendChild(el("kbd", null, "↑"));
   hint.appendChild(document.createTextNode(" history · "));
+  hint.appendChild(el("kbd", null, "esc"));
+  hint.appendChild(document.createTextNode(" leaves · "));
   hint.appendChild(el("kbd", null, "/"));
   hint.appendChild(document.createTextNode(" jumps here"));
 
@@ -136,6 +138,8 @@
   function linkEl(url, label) {
     var a = el("a", null, label || url);
     a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener";
     return a;
   }
 
@@ -397,7 +401,7 @@
     "shell",
     "  ls · cat <file> · history · clear · exit",
     "",
-    "tab completes · ↑↓ history · ctrl+l clears · esc cancels"
+    "tab completes (again for the next option) · ↑↓ history · ctrl+l clears · esc leaves"
   ].join("\n");
 
   var history_ = [];
@@ -526,16 +530,23 @@
     }
   }
 
-  /* ---------- Suggestions: ghost text + chips ---------- */
+  /* ---------- Suggestions: ghost text, chips and Tab cycling ---------- */
 
   var DEFAULT_CHIPS = ["help", "experience", "projects", "ask where do you work?", "open linkedin", "open github"];
+  var MAX_CHIPS = 8;
+  var cycle = null; // { base, options, index } while Tab steps through several matches
+
+  function withArgSpace(c) {
+    var cmd = (c.charAt(0) === "/" ? c.slice(1) : c).split(" ")[0];
+    return c.indexOf(" ") === -1 && (NEEDS_ARG[cmd] || argOptions(cmd)) ? c + " " : c;
+  }
 
   function refresh() {
     var value = input.value;
     field.classList.toggle("is-empty", !value);
-    var list = value.trim() ? candidates(value) : [];
+    var list = cycle ? cycle.options : value.trim() ? candidates(value) : [];
     var first = list[0];
-    if (first && value && first.toLowerCase().indexOf(value.toLowerCase()) === 0 && first.length > value.length) {
+    if (!cycle && first && value && first.toLowerCase().indexOf(value.toLowerCase()) === 0 && first.length > value.length) {
       ghostTyped.textContent = value;
       ghostRest.textContent = first.slice(value.length);
     } else {
@@ -543,17 +554,29 @@
       ghostRest.textContent = "";
     }
 
-    var chipList = value.trim() ? list.filter(function (c) { return c !== value.trim(); }) : DEFAULT_CHIPS;
+    var chipList, active = -1, from = 0;
+    if (cycle) {
+      chipList = cycle.options;
+      active = cycle.index;
+      from = Math.max(0, Math.min(active - 3, chipList.length - MAX_CHIPS));
+    } else {
+      chipList = value.trim() ? list.filter(function (c) { return c !== value.trim(); }) : DEFAULT_CHIPS;
+    }
     chips.textContent = "";
-    chipList.slice(0, 6).forEach(function (c) {
+    chipList.slice(from, from + MAX_CHIPS).forEach(function (c, i) {
       var b = el("button", "shell__chip", c);
       b.type = "button";
+      if (from + i === active) {
+        b.className += " is-active";
+        b.setAttribute("aria-current", "true");
+      }
       b.addEventListener("click", function () { useSuggestion(c); });
       chips.appendChild(b);
     });
   }
 
   function useSuggestion(c) {
+    cycle = null;
     var s = c.charAt(0) === "/" ? c.slice(1) : c;
     var cmd = s.split(" ")[0];
     if (NEEDS_ARG[cmd] && s.indexOf(" ") === -1) {
@@ -569,23 +592,28 @@
     form.scrollIntoView({ block: "nearest" });
   }
 
-  function complete() {
+  // Tab completes the current word. When several options match, each press
+  // selects the next one (Shift+Tab the previous), like zsh menu completion.
+  function complete(step) {
+    if (cycle) {
+      cycle.index = (cycle.index + step + cycle.options.length) % cycle.options.length;
+      input.value = cycle.options[cycle.index];
+      return refresh();
+    }
     var value = input.value;
-    var list = candidates(value);
+    var list = value.trim() ? candidates(value) : DEFAULT_CHIPS;
     if (!list.length) return;
     if (list.length === 1) {
-      var only = list[0];
-      var cmd = (only.charAt(0) === "/" ? only.slice(1) : only).split(" ")[0];
-      input.value = only + (only.indexOf(" ") === -1 && (NEEDS_ARG[cmd] || argOptions(cmd)) ? " " : "");
-    } else {
-      var prefix = commonPrefix(list);
-      if (prefix.length > value.length) {
-        input.value = prefix;
-      } else {
-        newEntry(value);
-        listing(list.map(function (c) { return c.split(" ").pop(); }));
-      }
+      input.value = withArgSpace(list[0]);
+      return refresh();
     }
+    var prefix = commonPrefix(list);
+    if (prefix.length > value.length) {
+      input.value = prefix;
+      return refresh();
+    }
+    cycle = { base: value, options: list, index: step > 0 ? 0 : list.length - 1 };
+    input.value = cycle.options[cycle.index];
     refresh();
   }
 
@@ -593,6 +621,7 @@
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    cycle = null;
     var value = input.value;
     input.value = "";
     run(value);
@@ -600,12 +629,21 @@
     form.scrollIntoView({ block: "nearest" });
   });
 
-  input.addEventListener("input", refresh);
+  input.addEventListener("input", function () {
+    cycle = null;
+    refresh();
+  });
 
   input.addEventListener("keydown", function (e) {
-    if (e.key === "Tab" && !e.shiftKey && input.value.trim()) {
+    // Any key other than Tab/Escape accepts the option selected by Tab
+    if (cycle && !/^(Tab|Escape|Shift|Control|Alt|Meta)$/.test(e.key)) {
+      cycle = null;
+      refresh();
+    }
+    if (e.key === "Tab") {
+      if (e.shiftKey && !cycle && !input.value) return; // Shift+Tab leaves an empty prompt
       e.preventDefault();
-      complete();
+      complete(e.shiftKey ? -1 : 1);
     } else if (e.key === "ArrowRight" && ghostRest.textContent && input.selectionStart === input.value.length) {
       e.preventDefault();
       input.value += ghostRest.textContent;
@@ -623,8 +661,14 @@
       input.value = history_[histIdx] || "";
       refresh();
     } else if (e.key === "Escape") {
-      if (input.value) input.value = "";
-      else input.blur();
+      if (cycle) {
+        input.value = cycle.base;
+        cycle = null;
+      } else if (input.value) {
+        input.value = "";
+      } else {
+        input.blur();
+      }
       refresh();
     } else if (e.ctrlKey && e.key === "l") {
       e.preventDefault();
