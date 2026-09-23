@@ -4,11 +4,29 @@
   --color-surface: #ffffff;
   --color-surface-muted: #f5f5f7;
   --color-border: rgba(0, 0, 0, 0.08);
+  --color-header-bg: rgba(255, 255, 255, 0.72);
   --color-accent: #0071e3;
-  --color-accent-hover: #0077ed;
+  --color-accent-tint: rgba(0, 113, 227, 0.06);
+  --color-accent-fill: #0071e3;
+  --color-accent-fill-hover: #0077ed;
+  --color-on-accent: #fff;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   --content-max: 42rem;
   --header-height: 3.25rem;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: #f5f5f7;
+    --color-text-secondary: #a1a1a6;
+    --color-surface: #0b0b0c;
+    --color-surface-muted: #161618;
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-header-bg: rgba(11, 11, 12, 0.72);
+    --color-accent: #2997ff;
+    --color-accent-tint: rgba(41, 151, 255, 0.12);
+  }
 }
 
 *,
@@ -43,8 +61,8 @@ body {
   top: 0.75rem;
   z-index: 100;
   padding: 0.5rem 1rem;
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
   text-decoration: none;
   border-radius: 980px;
   font-size: 0.875rem;
@@ -52,7 +70,7 @@ body {
 
 .skip-link:focus {
   left: 0.75rem;
-  outline: 2px solid #fff;
+  outline: 2px solid var(--color-on-accent);
   outline-offset: 2px;
 }
 
@@ -71,7 +89,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-header-bg);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--color-border);
@@ -120,6 +138,8 @@ body {
 }
 
 .site-nav a {
+  display: inline-block;
+  padding: 0.25rem 0;
   font-size: 0.8125rem;
   color: var(--color-text-secondary);
   text-decoration: none;
@@ -207,12 +227,12 @@ body {
 }
 
 .btn--primary {
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
 }
 
 .btn--primary:hover {
-  background: var(--color-accent-hover);
+  background: var(--color-accent-fill-hover);
 }
 
 .btn--primary:focus-visible {
@@ -227,7 +247,7 @@ body {
 }
 
 .btn--secondary:hover {
-  background: rgba(0, 113, 227, 0.06);
+  background: var(--color-accent-tint);
 }
 
 .btn--secondary:focus-visible {
@@ -367,13 +387,25 @@ body {
 
 @media (max-width: 40rem) {
   .site-header__inner {
-    flex-direction: column;
-    align-items: flex-start;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    min-height: 0;
+  }
+
+  .site-logo {
+    display: none;
+  }
+
+  .site-nav {
+    flex: 1;
   }
 
   .site-nav ul {
-    justify-content: flex-start;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .site-nav a {
+    padding: 0.5rem 0;
   }
 }

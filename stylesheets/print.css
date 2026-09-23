@@ -10,8 +10,12 @@ body {
 
 .site-header,
 .skip-link,
-.cta-row {
+.section--hero .cta-row {
   display: none !important;
+}
+
+.cta-row a {
+  display: block;
 }
 
 .site-footer {
