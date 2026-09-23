@@ -1,0 +1,199 @@
+/* Styles for the optional interactive shell (javascripts/shell.js loads this file). */
+
+.shell {
+  cursor: text;
+}
+
+.shell__entry {
+  margin-bottom: 1rem;
+}
+
+.shell__entry > .cmd {
+  margin-bottom: 0.25rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.shell__out > * + * {
+  margin-top: 0.5rem;
+}
+
+.shell__out kbd,
+.shell__hint kbd {
+  font: inherit;
+  color: var(--color-bright);
+  padding: 0 0.3em;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+.shell__pre {
+  margin: 0;
+  font: inherit;
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.shell__ls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2ch;
+}
+
+.shell__ok {
+  color: var(--color-green);
+}
+
+.shell__err {
+  color: #ff7b72;
+}
+
+/* Prompt line: the input sits on top of a "ghost" copy that shows the suggestion */
+
+.shell__line {
+  display: flex;
+  align-items: baseline;
+  margin: 0 -0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+}
+
+.shell__line .prompt {
+  margin-right: 1.5ch;
+}
+
+.shell__form:focus-within .shell__line {
+  background: rgba(110, 118, 129, 0.12);
+}
+
+.shell__field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.shell__input,
+.shell__ghost {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.shell__input {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-bright);
+  caret-color: var(--color-green);
+}
+
+.shell__ghost {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  white-space: pre;
+  pointer-events: none;
+  color: #6e7681;
+}
+
+.shell__ghost-typed {
+  visibility: hidden;
+}
+
+.shell__field.is-empty:not(:focus-within)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.6em;
+  height: 1.15em;
+  transform: translateY(-50%);
+  background: var(--color-text);
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell__field.is-empty:not(:focus-within)::after {
+    animation: none;
+  }
+}
+
+/* Suggestions */
+
+.shell__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.shell__chip {
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 0.2rem 0.75rem;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.shell__chip:hover {
+  color: var(--color-bright);
+  border-color: var(--color-green);
+}
+
+.shell__chip.is-active {
+  color: var(--color-bright);
+  border-color: var(--color-green);
+  background: rgba(63, 185, 80, 0.12);
+}
+
+.shell__chip:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+.shell__hint {
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+/* ANSI colours for the card */
+
+.ansi-bold { font-weight: 600; }
+.ansi-90 { color: #6e7681; }
+.ansi-97 { color: var(--color-bright); }
+.ansi-37 { color: var(--color-text); }
+.ansi-33 { color: var(--color-amber); }
+.ansi-32 { color: var(--color-green); }
+.ansi-36 { color: #56d4dd; }
+.ansi-36 a { color: inherit; }
+
+@media (max-width: 40rem) {
+  /* 16px stops iOS Safari from zooming in when the input is focused */
+  .shell__field {
+    font-size: 16px;
+  }
+
+  .shell__hint {
+    display: none;
+  }
+
+  /* The card is 54 columns wide; scale it to fit a phone screen */
+  .shell__card {
+    font-size: min(1em, 2.7vw);
+  }
+}
+
+@media print {
+  .shell {
+    display: none !important;
+  }
+}
