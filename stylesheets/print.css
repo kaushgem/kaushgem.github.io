@@ -5,40 +5,72 @@
 body {
   background: #fff !important;
   color: #000 !important;
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 11pt;
+  line-height: 1.45;
 }
 
-.site-header,
 .skip-link,
-.section--hero .cta-row {
+.titlebar,
+.cmd [aria-hidden="true"],
+.cmd--idle,
+.tree__branch,
+.block--hero > .cmd {
   display: none !important;
 }
 
-.cta-row a {
-  display: block;
+ul {
+  list-style: none;
+  padding: 0;
 }
 
-.site-footer {
-  border: none !important;
-  padding-top: 1rem !important;
+.name {
+  font-size: 22pt;
+  margin: 0;
 }
 
-.section {
-  padding: 1rem 0 !important;
+.block--hero p {
+  margin: 0;
+}
+
+.stack li {
+  display: inline;
+}
+
+.stack li + li::before {
+  content: " · ";
+}
+
+.block {
+  margin-bottom: 1.25rem;
   page-break-inside: avoid;
 }
 
-.section--muted {
-  background: transparent !important;
-  border: none !important;
+.cmd {
+  font-size: 13pt;
+  margin: 0 0 0.35rem;
+  border-bottom: 1px solid #999;
 }
 
-a[href]::after {
+.tree__name {
+  font-size: 11pt;
+  margin: 0.5rem 0 0.1rem;
+}
+
+.ls__row > span {
+  margin-right: 0.75em;
+}
+
+.comment {
+  color: #555;
+}
+
+a {
+  color: #000;
+}
+
+a[href^="http"]::after {
   content: " (" attr(href) ")";
   font-size: 0.85em;
   word-break: break-all;
-}
-
-a[href^="#"]::after {
-  content: "";
 }
